@@ -48,10 +48,11 @@ if __name__ == '__main__':
         print('Iteration %d ...' % (i + 1))
         # The --file flag tells to MRjob to copy the file to HADOOP
         # The --prot flag tells to MRKmeansStep where to load the prototypes from
-        mr_job1 = MRKmeansStep(args=['-r', 'local', args.docs,
+        mr_job1 = MRKmeansStep(args=[  # '-r', 'local',
+                                     args.docs,
                                      '--file', cwd + '/prototypes%d.txt' % i,
                                      '--prot', cwd + '/prototypes%d.txt' % i,
-                                     '--num-cores', str(args.cores)])
+                                     '--num-cores', str(args.ncores)])
 
         # Runs the script
         with mr_job1.make_runner() as runner1:
@@ -60,15 +61,16 @@ if __name__ == '__main__':
             new_proto = {}
             # Process the results of the script iterating the (key,value) pairs
             for key, value in mr_job1.parse_output(runner1.cat_output()):
+                pass
                 # You should store things here probably in a datastructure
 
             # If your scripts returns the new assignments you could write them in a file here
-
+            
             # You should store the new prototypes here for the next iteration
 
             # If you have saved the assignments, you can check if they have changed from the previous iteration
 
-        print(f"Time= {(time.time() - tinit)} seconds" % )
+        print(f"Time= {(time.time() - tinit)} seconds")
 
         if nomove:  # If there is no changes in two consecutive iteration we can stop
             print("Algorithm converged")

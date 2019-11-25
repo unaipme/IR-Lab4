@@ -17,6 +17,8 @@ MRKmeansDef
 
 """
 
+import sys
+
 from mrjob.job import MRJob
 from mrjob.step import MRStep
 
@@ -26,16 +28,17 @@ __author__ = 'bejar'
 class MRKmeansStep(MRJob):
     prototypes = {}
 
-    def jaccard(self, prot, doc):
+    def jaccard(self, prot: list, doc: list):
         """
-        Compute here the Jaccard similarity between  a prototype and a document
+        Compute here the Jaccard similarity between a prototype and a document
         prot should be a list of pairs (word, probability)
         doc should be a list of words
         Words must be alphabeticaly ordered
 
         The result should be always a value in the range [0,1]
         """
-        return 1
+        doc_mult = sum([word[1] for word in prot if word[0] in doc])
+        return doc_mult / (sum([word[1] ** 2 for word in prot]) + len(doc) - doc_mult)
 
     def configure_args(self):
         """
@@ -74,13 +77,10 @@ class MRKmeansStep(MRJob):
         # Each line is a string docid:wor1 word2 ... wordn
         doc, words = line.split(':')
         lwords = words.split()
-
-        #
-        # Compute map here
-        #
+        proto_dists = {prot_key: self.jaccard(prot_value, lwords) for prot_key, prot_value in self.prototypes.items()}
 
         # Return pair key, value
-        yield None, None
+        yield max(proto_dists, key=proto_dists.get), lwords
 
     def aggregate_prototype(self, key, values):
         """
@@ -100,7 +100,13 @@ class MRKmeansStep(MRJob):
         :return:
         """
 
-        yield None, None
+        n = 0
+        words = {}
+        for doc in values:
+            n += 1
+            for word in doc:
+                words[word] = words.get(word, 0) + 1
+        yield key, [(word, freq / n) for word, freq in words.items()]
 
     def steps(self):
         return [MRStep(mapper_init=self.load_data, mapper=self.assign_prototype,
