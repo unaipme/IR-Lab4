@@ -57,18 +57,20 @@ if __name__ == '__main__':
         # Runs the script
         with mr_job1.make_runner() as runner1:
             runner1.run()
-            new_assign = {}
             new_proto = {}
+            new_assign = {}
+            f = open(f"prototypes{i + 1}.txt", "w")
             # Process the results of the script iterating the (key,value) pairs
             for key, value in mr_job1.parse_output(runner1.cat_output()):
-                pass
+                new_proto[key] = value[0]
+                new_assign[key] = value[1]
+                p = " ".join([f"{e[0]}+{e[1]}" for e in value[0]])
+                f.write(f"{key}:{p}\n")
                 # You should store things here probably in a datastructure
+            f.close()
 
-            # If your scripts returns the new assignments you could write them in a file here
-            
-            # You should store the new prototypes here for the next iteration
-
-            # If you have saved the assignments, you can check if they have changed from the previous iteration
+            nomove = all(a in new_assign for a in assign) and all(a in assign for a in new_assign)
+            assign = new_assign
 
         print(f"Time= {(time.time() - tinit)} seconds")
 

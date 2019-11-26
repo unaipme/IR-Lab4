@@ -80,7 +80,7 @@ class MRKmeansStep(MRJob):
         proto_dists = {prot_key: self.jaccard(prot_value, lwords) for prot_key, prot_value in self.prototypes.items()}
 
         # Return pair key, value
-        yield max(proto_dists, key=proto_dists.get), lwords
+        yield max(proto_dists, key=proto_dists.get), (doc, lwords)
 
     def aggregate_prototype(self, key, values):
         """
@@ -102,11 +102,13 @@ class MRKmeansStep(MRJob):
 
         n = 0
         words = {}
+        docs = []
         for doc in values:
             n += 1
-            for word in doc:
+            docs.append(doc[0])
+            for word in doc[1]:
                 words[word] = words.get(word, 0) + 1
-        yield key, [(word, freq / n) for word, freq in words.items()]
+        yield key, ([(word, freq / n) for word, freq in words.items()], docs)
 
     def steps(self):
         return [MRStep(mapper_init=self.load_data, mapper=self.assign_prototype,
