@@ -44,12 +44,12 @@ if __name__ == '__main__':
         voc = {}  # global vocabulary frequency
         docterms = {}  # document vocabulary
         print('Querying all documents ...')
-        sc = scan(client, index=index, doc_type='document', query={"query": {"match_all": {}}})
+        sc = scan(client, index=index, query={"query": {"match_all": {}}})
         print('Generating vocabulary frequencies ...')
         for s in sc:
             docpath = s['_source']['path']
             docterms[docpath] = set()  # use a set for efficient operations
-            tv = client.termvectors(index=index, doc_type='document', id=s['_id'], fields=['text'])
+            tv = client.termvectors(index=index, id=s['_id'], fields=['text'])
             if 'text' in tv['term_vectors']:
                 for t in tv['term_vectors']['text']['terms']:
                     docterms[docpath].add(t)

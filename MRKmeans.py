@@ -48,7 +48,7 @@ if __name__ == '__main__':
         print('Iteration %d ...' % (i + 1))
         # The --file flag tells to MRjob to copy the file to HADOOP
         # The --prot flag tells to MRKmeansStep where to load the prototypes from
-        mr_job1 = MRKmeansStep(args=[  # '-r', 'local',
+        mr_job1 = MRKmeansStep(args=[ '-r', 'local',
                                      args.docs,
                                      '--file', cwd + '/prototypes%d.txt' % i,
                                      '--prot', cwd + '/prototypes%d.txt' % i,
@@ -69,7 +69,13 @@ if __name__ == '__main__':
                 # You should store things here probably in a datastructure
             f.close()
 
-            nomove = all(a in new_assign for a in assign) and all(a in assign for a in new_assign)
+            if assign != {}:
+                nomove_new = {}
+                for p in assign.keys():
+                    nomove_new[p] = all(a in new_assign[p] for a in assign[p]) and \
+                                    all(a in assign[p] for a in new_assign[p])
+
+                nomove = all(v for v in nomove_new.values())
             assign = new_assign
 
         print(f"Time= {(time.time() - tinit)} seconds")
